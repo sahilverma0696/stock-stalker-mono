@@ -18,8 +18,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-
-
 # Create your views here.
 def getDate():
     """Returns the last recent data from which data needed to be fetched"""
@@ -84,11 +82,20 @@ class SymbolList(APIView):
 from internal.modules.yfinance.fetch import fetchData
 
 def fetch_data(request):
+    date_string = request.GET.get('date',None)
+
+    #TODO: Make this flow in thread, since data scrapping takes time
     try:
-        fetchData()  # Call the fetchData function
-        response_data = {'success': True, 'message': 'Data fetch and save operation completed.'}
+        if date_string!= None:
+            date = datetime.strptime(date_string, '%Y-%m-%d')
+            fetchData(date)
+            response_data = {'success': True, 'message': 'Data fetch started, from your provided date'}
+        else:
+            fetch_data()
+            response_data = {'success': True, 'message': 'Data fetch started, from default date'}
     except Exception as e:
-        response_data = {'success': False, 'message': f'An error occurred: {str(e)}'}
+        logger.error("%s", e)
+        response_data = {'success': False, 'message': f'internal server error'}
     
     return JsonResponse(response_data)
 
