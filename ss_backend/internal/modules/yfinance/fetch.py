@@ -11,10 +11,17 @@ from internal.views import getDate
 logger = logging.getLogger(__name__)
 
 
-def fetchData():
+def fetchData(pDate=None):
     logger.info("Starting data fetch")
     symbolList = Symbol.get_all_symbols()
-    date = getDate()
+    if symbolList == None:
+        logger.error("symbol list empty")
+    if pDate is None:
+        date = getDate()
+    else:
+        date = pDate
+    logger.info(" starting date as date %s",date)
+
     try:
         for each_symbol in symbolList:
             logger.info("Fetching data for %s", each_symbol)

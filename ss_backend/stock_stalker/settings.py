@@ -146,6 +146,10 @@ LOGGING = {
             'format': '{levelname} {asctime} {module} {message}',
             'style': '{',
         },
+        'error_formatter': {
+            'format': '{levelname} {asctime} {module} {message}\n{stack_info}',
+            'style': '{',
+        },
     },
     'handlers': {
         'file_error': {
