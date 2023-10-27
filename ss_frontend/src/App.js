@@ -1,10 +1,13 @@
 import './App.css';
-import Navbar from './components/Navbar.js';
+import Navbar from './components/navbar'
+import SS from './routes/ss';
 
 function App() {
   return (
     <>
     <Navbar/>
+    <SS/>
+
     </>
   );
 }
