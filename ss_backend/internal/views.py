@@ -3,16 +3,11 @@ from rest_framework.response import Response
 from rest_framework import generics,status
 from django.db.models import Max
 from rest_framework.views import APIView
-from .models import Symbol
-from .serializers import SymbolSerializer
-from .models import StockData
-from .serializers import StockDataSerializer
+from .models import Symbol,StockData
+from .serializers import SymbolSerializer,StockDataSerializer
 from datetime import datetime
 from django.http import JsonResponse
 import json
-
-
-
 import logging
 
 
@@ -33,14 +28,17 @@ def getDate():
 
 
 
+# To get all data from StockData Model
 class StockDataList(generics.ListAPIView):
     queryset = StockData.objects.all()
     serializer_class = StockDataSerializer
 
-class StockDataDetail(generics.RetrieveUpdateAPIView):
+# To perform CRUD operations on StockData Model with a pk
+class StockDataDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = StockData.objects.all()
     serializer_class = StockDataSerializer
 
+# Tp post data for StockData Model
 class StockDataCreate(generics.CreateAPIView):
     queryset = StockData.objects.all()
     serializer_class = StockDataSerializer
@@ -81,24 +79,33 @@ class SymbolList(APIView):
 
 from internal.modules.yfinance.fetch import fetchData
 
+import threading
+from datetime import datetime
+
 def fetch_data(request):
-    date_string = request.GET.get('date',None)
+    date_string = request.GET.get('date', None)
 
-    #TODO: Make this flow in thread, since data scrapping takes time
-    try:
-        if date_string!= None:
-            date = datetime.strptime(date_string, '%Y-%m-%d')
-            fetchData(date)
-            response_data = {'success': True, 'message': 'Data fetch started, from your provided date'}
-        else:
-            fetch_data()
-            response_data = {'success': True, 'message': 'Data fetch started, from default date'}
-    except Exception as e:
-        logger.error("%s", e)
-        response_data = {'success': False, 'message': f'internal server error'}
-    
+    # Define a function to run fetch_data in a thread
+    def fetch_data_threaded():
+        try:
+            if date_string is not None:
+                date = datetime.strptime(date_string, '%Y-%m-%d')
+                fetchData(date)
+                response_data = {'success': True, 'message': 'Data fetch started, from your provided date'}
+            else:
+                fetch_data()
+                response_data = {'success': True, 'message': 'Data fetch started, from default date'}
+        except Exception as e:
+            logger.error("%s", e)
+            response_data = {'success': False, 'message': f'internal server error'}
+
+    # Create a thread and start it
+    fetch_thread = threading.Thread(target=fetch_data_threaded)
+    fetch_thread.start()
+
+    # Return a response immediately
+    response_data = {'success': True, 'message': 'Data fetch started in the background'}
     return JsonResponse(response_data)
-
 
 
 def calculate_sma_view(request):
