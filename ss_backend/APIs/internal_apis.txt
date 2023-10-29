@@ -1,0 +1,5 @@
+StockData
+curl http://example.com/api/stockdata/<pk>/
+curl -X PUT -H "Content-Type: application/json" -d '{"field1": "new_value", "field2": "new_value"}' http://example.com/api/stockdata/<pk>/
+curl -X DELETE http://example.com/api/stockdata/<pk>/
+curl http://your-api-url/api/stock-data/ABC/

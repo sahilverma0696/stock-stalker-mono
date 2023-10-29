@@ -144,7 +144,7 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
-            'format': '{levelname} {asctime} {module} {message}',
+            'format': '[{levelname}] {asctime} path/{module}/{funcName}/({lineno}): {message} ',
             'style': '{',
         },
         'error_formatter': {
@@ -157,13 +157,13 @@ LOGGING = {
             'level': 'ERROR',
             'class': 'logging.FileHandler',
             'filename': os.path.join(BASE_DIR, 'error.log'),
-            'formatter': 'verbose',
+            'formatter': 'error_formatter',  # Use the error formatter for error logs
         },
         'file_info': {
             'level': 'INFO',
             'class': 'logging.FileHandler',
             'filename': os.path.join(BASE_DIR, 'info.log'),
-            'formatter': 'verbose',
+            'formatter': 'verbose',  # Use the verbose formatter for info logs
         },
     },
     'root': {

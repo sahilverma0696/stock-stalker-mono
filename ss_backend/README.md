@@ -12,9 +12,9 @@ python3 manage.py crontab remove;
 
 ## Reset migrations
 In case you decide to delete all migrations and delete all db 
-find . -path "*/migrations/*.py" -not -name "__init__.py" -delete
-find . -path "*/migrations/*.pyc"  -delete
-rm db.sqlite3
+find . -path "*/migrations/*.py" -not -name "__init__.py" -delete;
+find . -path "*/migrations/*.pyc"  -delete;
+rm db.sqlite3;
 for each app
 python manage.py makemigrations <appname> 
 python3 manage.py migrate
