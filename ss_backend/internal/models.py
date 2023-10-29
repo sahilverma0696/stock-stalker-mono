@@ -14,6 +14,10 @@ class Symbol(models.Model):
     def get_all_symbols(cls):
         #all_symbols = Symbol.get_all_symbols()
         return list(cls.objects.values_list('symbol', flat=True))
+    @classmethod
+    def get_symbol_id_and_symbol(cls):
+        symbol_data = list(cls.objects.values_list('symbol_id', 'symbol'))
+        return [(symbol_id, symbol) for symbol_id, symbol in symbol_data]
 
 ## Historical Data
 class StockData(models.Model):
@@ -24,10 +28,8 @@ class StockData(models.Model):
     low = models.FloatField()
     close = models.FloatField()
     volume = models.IntegerField()
-    symbol = models.ForeignKey(Symbol, on_delete=models.CASCADE)  # Use symbol_id as a foreign key
+    symbol = models.ForeignKey(Symbol, to_field='symbol',on_delete=models.CASCADE)  # Use symbol_id as a foreign key
 
-    class Meta:
-        unique_together = ('date', 'symbol')
 
     def __str__(self):
         return f"{self.date} - {self.symbol}"

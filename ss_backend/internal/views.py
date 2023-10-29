@@ -1,10 +1,5 @@
-from django.shortcuts import render
-from rest_framework.response import Response
-from rest_framework import generics,status
 from django.db.models import Max
-from rest_framework.views import APIView
-from .models import Symbol,StockData
-from .serializers import SymbolSerializer,StockDataSerializer
+from .models import StockData
 from datetime import datetime
 from django.http import JsonResponse
 import json
@@ -16,64 +11,15 @@ logger = logging.getLogger(__name__)
 # Create your views here.
 def getDate():
     """Returns the last recent data from which data needed to be fetched"""
-    # TODO: remove hardcoded value of SYMBOL
+    ## YYYY-MM-DD    
     latest_date = datetime(2015, 1, 1)
    
     # Check if data for "SBIN" exists in the model
-    if StockData.objects.filter(symbol='SBIN').exists():
+    if StockData.objects.filter(symbol_id='1').exists():
         latest_date_query = StockData.objects.filter(symbol='SBIN').aggregate(latest_date=Max('date'))
         latest_date = latest_date_query['latest_date']
     
     return latest_date
-
-
-
-# To get all data from StockData Model
-class StockDataList(generics.ListAPIView):
-    queryset = StockData.objects.all()
-    serializer_class = StockDataSerializer
-
-# To perform CRUD operations on StockData Model with a pk
-class StockDataDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = StockData.objects.all()
-    serializer_class = StockDataSerializer
-
-# Tp post data for StockData Model
-class StockDataCreate(generics.CreateAPIView):
-    queryset = StockData.objects.all()
-    serializer_class = StockDataSerializer
-
-#-----
-
-
-class SymbolList(APIView):
-    def get(self, request):
-        symbols = Symbol.objects.all()
-        serializer = SymbolSerializer(symbols, many=True)
-        return Response(serializer.data)
-
-    def post(self, request):
-        symbol_data = request.data.get("symbols", [])
-        
-        if not symbol_data:
-            return Response({"message": "No symbols provided for insertion."}, status=status.HTTP_400_BAD_REQUEST)
-
-        unique_symbols = list(set(symbol_data))  # Deduplicate the provided symbols
-
-        if unique_symbols:
-            new_symbols = [Symbol(symbol=symbol) for symbol in unique_symbols]
-            Symbol.objects.bulk_create(new_symbols)
-            return Response({"message": "Symbols added successfully"}, status=status.HTTP_201_CREATED)
-        else:
-            return Response({"message": "No new symbols to add."}, status=status.HTTP_400_BAD_REQUEST)
-
-    def delete(self, request):
-        symbols_to_delete = request.data.get('symbols', [])
-        if not symbols_to_delete:
-            return Response({"message": "No symbols provided for deletion."}, status=status.HTTP_400_BAD_REQUEST)
-
-        symbols_deleted = Symbol.objects.filter(symbol__in=symbols_to_delete).delete()
-        return Response({"message": f"{symbols_deleted[0]} symbols deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
 
 
 
@@ -93,7 +39,7 @@ def fetch_data(request):
                 fetchData(date)
                 response_data = {'success': True, 'message': 'Data fetch started, from your provided date'}
             else:
-                fetch_data()
+                fetchData()
                 response_data = {'success': True, 'message': 'Data fetch started, from default date'}
         except Exception as e:
             logger.error("%s", e)

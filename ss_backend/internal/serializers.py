@@ -9,4 +9,4 @@ class StockDataSerializer(serializers.ModelSerializer):
 class SymbolSerializer(serializers.ModelSerializer):
     class Meta:
         model = Symbol
-        fields = ['symbol']
+        fields = '__all__'
