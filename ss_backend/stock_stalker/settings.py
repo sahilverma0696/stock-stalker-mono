@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'internal',
     'users',
     'django_crontab',
+    'django.contrib.postgres',
 ]
 
 MIDDLEWARE = [

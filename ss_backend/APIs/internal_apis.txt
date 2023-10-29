@@ -3,3 +3,24 @@ curl http://example.com/api/stockdata/<pk>/
 curl -X PUT -H "Content-Type: application/json" -d '{"field1": "new_value", "field2": "new_value"}' http://example.com/api/stockdata/<pk>/
 curl -X DELETE http://example.com/api/stockdata/<pk>/
 curl http://your-api-url/api/stock-data/ABC/
+
+
+Lists
+curl -X POST http://yourdomain.com/api/lists/ -H "Content-Type: application/json" -d '{
+    "list_name": "NewList",
+    "is_public": true,
+    "symbols": ["symbol1", "symbol2", "symbol3"]
+}'
+
+curl http://yourdomain.com/api/lists/
+
+curl http://yourdomain.com/api/lists/list_id/
+
+curl -X PUT http://yourdomain.com/api/lists/list_id/ -H "Content-Type: application/json" -d '{
+    "list_name": "UpdatedList",
+    "is_public": false,
+    "symbols": ["symbol4", "symbol5", "symbol6"]
+}'
+
+curl -X DELETE http://yourdomain.com/api/lists/list_id/
+
