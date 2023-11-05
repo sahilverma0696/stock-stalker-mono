@@ -30,6 +30,7 @@ from datetime import datetime
 
 def fetch_data(request):
     date_string = request.GET.get('date', None)
+    response_data = {'success': False, 'message': 'default'}
 
     # Define a function to run fetch_data in a thread
     def fetch_data_threaded():
@@ -44,13 +45,13 @@ def fetch_data(request):
         except Exception as e:
             logger.error("%s", e)
             response_data = {'success': False, 'message': f'internal server error'}
+    #TODO: handle the return from this function to parent function
 
     # Create a thread and start it
     fetch_thread = threading.Thread(target=fetch_data_threaded)
     fetch_thread.start()
 
     # Return a response immediately
-    response_data = {'success': True, 'message': 'Data fetch started in the background'}
     return JsonResponse(response_data)
 
 
