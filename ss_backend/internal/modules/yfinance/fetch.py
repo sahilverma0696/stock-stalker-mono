@@ -20,11 +20,11 @@ logger = logging.getLogger(__name__)
 def fetchData(pDate=None):
     logger.info("Starting data fetch")
 
-    symbol_id_and_symbol_list = Symbol.get_symbol_id_and_symbol()
-    if not symbol_id_and_symbol_list:
+    symbol_list = Symbol.get_all_symbols()
+    if not symbol_list:
         logger.error("Symbol list is empty")
 
-    logger.info(symbol_id_and_symbol_list)
+    logger.info(symbol_list)
     if pDate is None:
         date = getDate()
     else:
@@ -33,7 +33,7 @@ def fetchData(pDate=None):
 
     fetchedData = []
     try:
-        for symbol_id, each_symbol in symbol_id_and_symbol_list:
+        for each_symbol in symbol_list:
             logger.info("Fetching data for %s", each_symbol)
             df = yf.Ticker(f'{each_symbol}.NS').history(start=date)
             
@@ -48,21 +48,20 @@ def fetchData(pDate=None):
                 
                 try:
                     # Attempt to save the stock_data
-                    symbol_instance = Symbol.objects.get(symbol=each_symbol)
-                    stock_data.symbol = symbol_instance
+                    stock_data.symbol = Symbol.objects.get(symbol=each_symbol)
                     stock_data.save()
                 except IntegrityError:
                     # Handle the case where the entry is already in the database
                     logger.warning("Duplicate entry for symbol %s on date %s", each_symbol, index)
 
             fetchedData.append(each_symbol)
-            delay_seconds = random.randint(4, 7)
+            delay_seconds = random.randint(2,3)
             logger.info("Waiting for %d seconds before the next symbol...", delay_seconds)
             time.sleep(delay_seconds)
     except Exception as e:
         logger.error("An error occurred while fetching and saving data: %s", e)
 
-    if Counter(fetchedData) == Counter([symbol for _, symbol in symbol_id_and_symbol_list]):
+    if Counter(fetchedData) == Counter([symbol for symbol in symbol_list]):
         logger.info("Data fetched for all symbols")
     else:
         logger.info("Data NOT fetched for all symbols")

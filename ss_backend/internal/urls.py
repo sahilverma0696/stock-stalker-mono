@@ -1,7 +1,7 @@
 from django.db import router
 from django.urls import path
 from internal.views_dir.symbol import SymbolList
-from internal.views_dir.stockdata import StockDataList,StockDataDetail,StockDataCreate,CustomStockDataDelete,StockDataBySymbol
+from internal.views_dir.stockdata import StockDataList,StockDataDetail,StockDataCreate,CustomStockDataDelete,StockDataBySymbol,DeleteAllStockData
 from .views import fetch_data, calculate_sma_view
 
 #--------------------------------
@@ -21,7 +21,8 @@ urlpatterns = [
     path('stockdata/<int:pk>/', StockDataDetail.as_view(), name='stockdata-detail'),
     path('stockdata/create/', StockDataCreate.as_view(), name='stockdata-create'),
     path('delete-stock-data/<str:symbol>/', CustomStockDataDelete.as_view(), name='custom-stock-data-delete'),
-    path('stock-data/<str:symbol>/', StockDataBySymbol.as_view(), name='stock-data-by-symbol'),
+    path('delete-all-stock-data/', DeleteAllStockData.as_view(), name='delete-all-stock-data'),
+    path('stockdata/<str:symbol>/', StockDataBySymbol.as_view(), name='stock-data-by-symbol'),
 
 
 

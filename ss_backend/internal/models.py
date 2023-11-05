@@ -1,5 +1,7 @@
 from django.db import models
 from users.models import Users
+from django.db.models import Max
+
 
 
 ## Symbol Table
@@ -26,6 +28,14 @@ class StockData(models.Model):
 
     def __str__(self):
         return f"{self.date} - {self.symbol}"
+    
+    @classmethod
+    def get_latest_date(cls, stock_id):
+        try:
+            latest_date = cls.objects.filter(symbol=stock_id).aggregate(Max('date'))['date__max']
+            return latest_date
+        except cls.DoesNotExist:
+            return None
 
 ## Lists Table
 class WatchList(models.Model):
