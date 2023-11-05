@@ -15,9 +15,8 @@ def getDate():
     latest_date = datetime(2015, 1, 1)
    
     # Check if data for "SBIN" exists in the model
-    if StockData.objects.filter(symbol_id='1').exists():
-        latest_date_query = StockData.objects.filter(symbol='SBIN').aggregate(latest_date=Max('date'))
-        latest_date = latest_date_query['latest_date']
+    if StockData.objects.filter(id=1).exists():
+        latest_date = StockData.get_latest_date(1)
     
     return latest_date
 
@@ -28,13 +27,20 @@ from internal.modules.yfinance.fetch import fetchData
 import threading
 from datetime import datetime
 
+
+#TODO: Make the response return correct in this
+# Define a threading.Event to signal when the background thread is done
+thread_done = threading.Event()
+
 def fetch_data(request):
     date_string = request.GET.get('date', None)
+
+    # Define a dictionary to store the response data
     response_data = {'success': False, 'message': 'default'}
 
-    # Define a function to run fetch_data in a thread
     def fetch_data_threaded():
         try:
+            nonlocal response_data  # Allow modification of the outer response_data variable
             if date_string is not None:
                 date = datetime.strptime(date_string, '%Y-%m-%d')
                 fetchData(date)
@@ -45,7 +51,9 @@ def fetch_data(request):
         except Exception as e:
             logger.error("%s", e)
             response_data = {'success': False, 'message': f'internal server error'}
-    #TODO: handle the return from this function to parent function
+        finally:
+            # Set the threading.Event to indicate that the thread is done
+            thread_done.set()
 
     # Create a thread and start it
     fetch_thread = threading.Thread(target=fetch_data_threaded)
@@ -53,7 +61,6 @@ def fetch_data(request):
 
     # Return a response immediately
     return JsonResponse(response_data)
-
 
 def calculate_sma_view(request):
     if request.method == 'GET':
