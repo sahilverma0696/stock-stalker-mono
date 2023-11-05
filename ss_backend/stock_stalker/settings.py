@@ -78,9 +78,14 @@ WSGI_APPLICATION = 'stock_stalker.wsgi.application'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    "default": {
+        # currenlty putting connection local, to be handled in dockerization
+        "ENGINE": "django.db.backends.postgresql",
+        'NAME': 'ss_backend',  
+        'USER': 'postgres',
+        'PASSWORD': '0000',  
+        'HOST': 'localhost',
+        'PORT': '5432', 
     }
 }
 
