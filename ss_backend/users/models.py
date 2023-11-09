@@ -1,21 +1,17 @@
-from uuid import uuid4
+# users/models.py
+from django.contrib.auth.models import AbstractUser, PermissionsMixin
 from django.db import models
-#from django.contrib.auth.models import AbstractUser
+from users.manager import CustomUserManager  # Import your custom manager
 
-#TODO: Make this model according to Django users, currenlty this model represents a mock
-
-class Users(models.Model):
-    username = models.CharField(max_length=30, blank=True)
+class CustomUser(AbstractUser, PermissionsMixin):
+    id = models.AutoField(primary_key=True)  # Explicitly define id field
     email = models.EmailField(unique=True)
-    first_name = models.CharField(max_length=30, blank=True)
-    last_name = models.CharField(max_length=30, blank=True)
-    date_of_birth = models.DateField(null=True, blank=True)
-    phone_number = models.CharField(max_length=15,unique=True)
-    #TODO: following fields to be added accordingly for permissions
-    """
-    - is_staff
-    - is_superuser
-    - is_active
-    - tier_user
-    """
+    username = models.CharField(max_length=30, unique=True)
+    first_name = models.CharField(max_length=30)
+    last_name = models.CharField(max_length=30)
+    phone_number = models.CharField(max_length=15)
 
+    objects = CustomUserManager()  # Use the custom manager
+
+    def __str__(self):
+        return self.email

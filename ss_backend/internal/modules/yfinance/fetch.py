@@ -55,7 +55,7 @@ def fetchData(pDate=None):
                     logger.warning("Duplicate entry for symbol %s on date %s", each_symbol, index)
 
             fetchedData.append(each_symbol)
-            delay_seconds = random.randint(2,3)
+            delay_seconds = 1
             logger.info("Waiting for %d seconds before the next symbol...", delay_seconds)
             time.sleep(delay_seconds)
     except Exception as e:
