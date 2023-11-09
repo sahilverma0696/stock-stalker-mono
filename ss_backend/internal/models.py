@@ -1,5 +1,5 @@
 from django.db import models
-from users.models import Users
+from users.models import CustomUser
 from django.db.models import Max
 
 
@@ -40,7 +40,7 @@ class StockData(models.Model):
 ## Lists Table
 class WatchList(models.Model):
     list_name = models.CharField(max_length=50)
-    user_id = models.ForeignKey(Users, on_delete=models.CASCADE)
+    user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     is_public = models.BooleanField(default=True)
     class Meta:
         unique_together = ('list_name', 'user_id')
@@ -50,4 +50,4 @@ class WatchList(models.Model):
 class WatchListMapping(models.Model):
     list_name = models.ForeignKey(WatchList,to_field='id',on_delete=models.CASCADE)
     symbol = models.ForeignKey(Symbol, to_field='symbol',on_delete=models.CASCADE)
-    user_id = models.ForeignKey(Users, on_delete=models.CASCADE) # TODO: Handle this field properly
+    user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE) # TODO: Handle this field properly

@@ -14,6 +14,13 @@ python3 manage.py crontab remove;
 In case you decide to delete all migrations and delete all db 
 find . -path "*/migrations/*.py" -not -name "__init__.py" -delete;
 find . -path "*/migrations/*.pyc"  -delete;
+
+DROP SCHEMA public CASCADE;
+CREATE SCHEMA public;
+
+GRANT ALL ON SCHEMA public TO postgres;
+GRANT ALL ON SCHEMA public TO public;
+
 for each app
 python manage.py makemigrations <appname> 
 python3 manage.py migrate
