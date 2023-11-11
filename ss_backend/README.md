@@ -35,3 +35,6 @@ $ ./manage.py reset_db mybucket
 
 # Don't ask for a confirmation before doing the reset
 $ ./manage.py reset_db --noinput
+
+## create superuser
+python3 manage.py createsuperuser
