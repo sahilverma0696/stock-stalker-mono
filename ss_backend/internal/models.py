@@ -1,6 +1,8 @@
 from django.db import models
 from users.models import CustomUser
 from django.db.models import Max
+from django.db.models import Q
+
 
 
 
@@ -40,14 +42,15 @@ class StockData(models.Model):
 ## Lists Table
 class WatchList(models.Model):
     list_name = models.CharField(max_length=50)
-    user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     is_public = models.BooleanField(default=True)
     class Meta:
-        unique_together = ('list_name', 'user_id')
+        constraints = [
+            models.UniqueConstraint(fields=["list_name"], condition=Q(is_public=True), name="unique_public_list_name"),
+        ]
 
 
 
 class WatchListMapping(models.Model):
     list_name = models.ForeignKey(WatchList,to_field='id',on_delete=models.CASCADE)
     symbol = models.ForeignKey(Symbol, to_field='symbol',on_delete=models.CASCADE)
-    user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE) # TODO: Handle this field properly
+    user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE,null=True) # TODO: Handle this field properly

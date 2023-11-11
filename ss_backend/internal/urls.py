@@ -8,6 +8,7 @@ from .views import fetch_data, calculate_sma_view
 from django.urls import path,include
 from rest_framework.routers import DefaultRouter
 from internal.views_dir.symbol import SymbolViewSet
+from internal.views_dir.watchlists import WatchListView
 
 router = DefaultRouter()
 router.register(r'symbol',SymbolViewSet)
@@ -24,7 +25,7 @@ urlpatterns = [
     path('delete-all-stock-data/', DeleteAllStockData.as_view(), name='delete-all-stock-data'),
     path('stockdata/<str:symbol>/', StockDataBySymbol.as_view(), name='stock-data-by-symbol'),
 
-
+    path('watchlists/',WatchListView.as_view(),name='watchlists'),
 
     
     path('fetchData/', fetch_data, name='fetch-data'),
