@@ -9,6 +9,7 @@ from internal.views import getDate
 
 from collections import Counter
 from django.db import IntegrityError
+import datetime
 
 
 logger = logging.getLogger(__name__)
@@ -16,6 +17,7 @@ logger = logging.getLogger(__name__)
 #TODO: Make this function fucking clean and powerful
 #TODO: resume data fetch for the symbols for which fetch failed
 #TODO: Potential Break in type ignore for date type
+#TODO: start fetch from lastest_date+1
 # Return a type to this function
 def fetchData(pDate=None):
     logger.info("Starting data fetch")
@@ -25,17 +27,18 @@ def fetchData(pDate=None):
         logger.error("Symbol list is empty")
 
     logger.info(symbol_list)
-    if pDate is None:
-        date = getDate()
-    else:
-        date = pDate
-    logger.info("Starting date as date %s", date)
 
     fetchedData = []
     try:
         for each_symbol in symbol_list:
-            logger.info("Fetching data for %s", each_symbol)
-            df = yf.Ticker(f'{each_symbol}.NS').history(start=date)
+            iDate = getDate(each_symbol)
+            logger.info("Latest date from db %s, vs present date %s",iDate,datetime.date.today())
+            if iDate == datetime.date.today():
+                logger.info("Upto-date data present for %s to date %s, skipping for same", each_symbol, iDate)
+                continue
+
+            logger.info("Fetching data for %s from the date %s", each_symbol,iDate)
+            df = yf.Ticker(f'{each_symbol}.NS').history(start=iDate)
             
             for index, row in df.iterrows():
                 stock_data = StockData()

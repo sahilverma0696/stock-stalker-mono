@@ -9,14 +9,14 @@ import logging
 logger = logging.getLogger(__name__)
 
 # Create your views here.
-def getDate():
+def getDate(pSymbol):
     """Returns the last recent data from which data needed to be fetched"""
     ## YYYY-MM-DD    
     latest_date = datetime(2015, 1, 1)
    
     # Check if data for "SBIN" exists in the model
-    if StockData.objects.filter(id=1).exists():
-        latest_date = StockData.get_latest_date(1)
+    if StockData.objects.filter(symbol=pSymbol).exists():
+        latest_date = StockData.get_latest_date_from_db(pSymbol)
     
     return latest_date
 
