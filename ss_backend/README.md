@@ -38,3 +38,9 @@ $ ./manage.py reset_db --noinput
 
 ## create superuser
 python3 manage.py createsuperuser
+
+
+
+## Coding conventions 
+- function or class parameters will be starting with small p, example date -> pData, symbol ->pSymbol
+- internal variables will be starting with i in case of collision with function name, date ->iDate ( date variable limited to this class)

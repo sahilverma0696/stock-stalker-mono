@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 def is_time_difference_valid(prev_date, today_date, max_business_days=2):
     # Define the list of weekend days (0 = Monday, 6 = Sunday)
