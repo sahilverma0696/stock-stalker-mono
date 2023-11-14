@@ -1,14 +1,15 @@
 from django.db import router
-from django.urls import path
-from internal.views_dir.symbol import SymbolList
-from internal.views_dir.stockdata import StockDataList,StockDataDetail,StockDataCreate,CustomStockDataDelete,StockDataBySymbol,DeleteAllStockData
-from .views import fetch_data, calculate_sma_view
+from django.urls import path, include
+
+from internal.symbol.views import SymbolList
+from internal.stocksdata.views import StockDataList,StockDataDetail,StockDataCreate,CustomStockDataDelete,StockDataBySymbol,DeleteAllStockData
+from internal.views import fetch_data, calculate_sma_view
 
 #--------------------------------
 from django.urls import path,include
 from rest_framework.routers import DefaultRouter
-from internal.views_dir.symbol import SymbolViewSet
-from internal.views_dir.watchlists import WatchListView
+from internal.symbol.views import SymbolViewSet
+from internal.watchlists.views import WatchListView
 
 router = DefaultRouter()
 router.register(r'symbol',SymbolViewSet)
@@ -31,6 +32,18 @@ urlpatterns = [
     path('fetchData/', fetch_data, name='fetch-data'),
 
     path('calculate-sma/', calculate_sma_view, name='calculate-sma'),
+
+    # ## Symbol urls 
+    # path('symbol/', include('internal.symbol.urls')),
+
+    # ## StockData urls 
+    # path('stocks-data/', include('internal.stocksdata.urls')),
+
+    # ## WatchList urls 
+    # path('watchlists/', include('internal.watchlists.urls')),
+
+    # ## WatchListMapping urls
+    # path('watchlists-mapping/', include('internal.watchlistsmapping.urls')),
     
 ]
 

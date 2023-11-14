@@ -1,5 +1,5 @@
 from django.db.models import Max
-from .models import StockData
+from internal.stocksdata.models import StockData
 from datetime import datetime
 from django.http import JsonResponse
 import json
@@ -22,7 +22,7 @@ def getDate(pSymbol):
 
 
 
-from internal.modules.yfinance.fetch import fetchData
+from internal.utility.yfinance.fetch import fetchData
 
 import threading
 from datetime import datetime

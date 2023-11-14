@@ -4,7 +4,8 @@ import logging
 import pytz
 import yfinance as yf 
 import pandas as pd 
-from internal.models import StockData,Symbol
+from internal.stocksdata.models import StockData
+from internal.symbol.models import Symbol
 from internal.views import getDate
 
 from collections import Counter
