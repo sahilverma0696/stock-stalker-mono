@@ -1,6 +1,6 @@
 from rest_framework import viewsets, status
-from internal.models import Symbol
-from internal.serializers import SymbolSerializer
+from internal.symbol.models import Symbol
+from internal.symbol.serializers import SymbolSerializer
 from rest_framework.response import Response
 from rest_framework.views import APIView
 

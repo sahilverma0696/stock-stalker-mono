@@ -1,7 +1,8 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from internal.models import WatchList, WatchListMapping, Symbol
-from internal.serializers import WatchListSerializer, SymbolSerializer
+from internal.symbol.models import Symbol
+from internal.watchlists.models import WatchList
+from internal.watchlistmapping.models import WatchListMapping
 from rest_framework import permissions, authentication
 
 

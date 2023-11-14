@@ -1,10 +1,10 @@
 from rest_framework import generics, status
-from internal.models import StockData
+from internal.stocksdata.models import StockData
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 
-from internal.serializers import StockDataSerializer
+from internal.stocksdata.serializers import StockDataSerializer
 
 # To get all data from StockData Model
 class StockDataList(generics.ListAPIView):
