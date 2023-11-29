@@ -3,10 +3,12 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
 from internal.symbol.views import SymbolList, SymbolViewSet
-from internal.stocksdata.views import StockDataList, StockDataDetail, StockDataCreate, CustomStockDataDelete, StockDataBySymbol, DeleteAllStockData
+from internal.stocksdata.views import *
 from internal.utility.views import fetch_data
 from internal.indicators.views import calculate_sma_view
-from internal.watchlists.views import WatchListView
+from internal.watchlists.views import WatchListView,getPublicWatchLists
+
+from internal.watchlistmapping.views import *
 
 router = DefaultRouter()
 router.register(r'symbol', SymbolViewSet)
@@ -28,7 +30,6 @@ urlpatterns = [
 
     path('watchlists/', WatchListView.as_view(), name='watchlists'),
 
-
     path('fetchData/', fetch_data, name='fetch-data'),
 
     path('calculate-sma/', calculate_sma_view, name='calculate-sma'),
@@ -42,7 +43,9 @@ urlpatterns = [
     # ## WatchList urls
     # path('watchlists/', include('internal.watchlists.urls')),
 
-    # ## WatchListMapping urls
+    ## WatchListMapping urls
     # path('watchlists-mapping/', include('internal.watchlistsmapping.urls')),
+    path("public-watchlists/", getPublicWatchLists, name="get_public_watchlists"),
+
 
 ]
