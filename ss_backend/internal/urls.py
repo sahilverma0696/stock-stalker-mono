@@ -6,7 +6,7 @@ from internal.symbol.views import SymbolList, SymbolViewSet
 from internal.stocksdata.views import *
 from internal.utility.views import fetch_data
 from internal.indicators.views import calculate_sma_view
-from internal.watchlists.views import WatchListView
+from internal.watchlists.views import WatchListView,getPublicWatchLists
 
 from internal.watchlistmapping.views import *
 
@@ -30,7 +30,6 @@ urlpatterns = [
 
     path('watchlists/', WatchListView.as_view(), name='watchlists'),
 
-
     path('fetchData/', fetch_data, name='fetch-data'),
 
     path('calculate-sma/', calculate_sma_view, name='calculate-sma'),
@@ -46,6 +45,7 @@ urlpatterns = [
 
     ## WatchListMapping urls
     # path('watchlists-mapping/', include('internal.watchlistsmapping.urls')),
-    path("user-watchlists/", get_watchlists, name="get_watchlists"),
+    path("public-watchlists/", getPublicWatchLists, name="get_public_watchlists"),
+
 
 ]
