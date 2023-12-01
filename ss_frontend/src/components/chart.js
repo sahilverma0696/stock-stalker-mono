@@ -37,16 +37,4 @@ export const CandleStickChart=({ type, width, data, ratio }) =>{
     )   
 }
 
-// CandleStickChart.propTypes = {
-// 	data: PropTypes.array.isRequired,
-// 	width: PropTypes.number.isRequired,
-// 	ratio: PropTypes.number.isRequired,
-// 	type: PropTypes.oneOf(["svg", "hybrid"]).isRequired,
-// };
 
-// CandleStickChart.defaultProps = {
-// 	type: "svg",
-// };
-// CandleStickChart = fitWidth(CandleStickChart);
-
-// export default CandleStickChart;

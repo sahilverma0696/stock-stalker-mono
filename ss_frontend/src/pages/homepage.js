@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { Dialog } from '@headlessui/react'
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
+import { StickyFooter } from '../components/footer'
 
 const navigation = [
-  { name: 'Dashboard', href: '/dashboard' },
+  { name: 'Dashboard', href: '/terminal' },
   { name: 'Blog', href: '#' },
   { name: 'Pricing', href: '#' },
   { name: 'About us', href: '#' },
@@ -13,6 +14,7 @@ export const HomePage=()=> {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   return (
+    <>
     <div className="bg-white">
       <header className="absolute inset-x-0 top-0 z-50">
         <nav className="flex items-center justify-between p-6 lg:px-8" aria-label="Global">
@@ -155,5 +157,7 @@ export const HomePage=()=> {
         </div>
       </div>
     </div>
+    <div><StickyFooter/></div>
+    </>
   )
 }
