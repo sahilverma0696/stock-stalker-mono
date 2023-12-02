@@ -2,7 +2,10 @@ from django.db import models
 from internal.symbol.models import Symbol
 from django.conf import settings
 from django.db.models import Max
-from pytz import timezone
+from pytz import timezone as pytzTimezone
+from django.utils import timezone
+from datetime import timedelta
+
 
 
 ## Historical Data
@@ -14,6 +17,13 @@ class StockData(models.Model):
     close = models.FloatField()
     volume = models.IntegerField()
     symbol = models.ForeignKey(Symbol, to_field='symbol',on_delete=models.CASCADE)
+
+    def save(self, *args, **kwargs):
+        # Ensure the datetime is timezone-aware before saving
+        if not self.date.tzinfo:
+            self.date = timezone.make_aware(self.date)
+
+        super().save(*args, **kwargs)
 
     class Meta:
         unique_together = ['date', 'symbol']
@@ -38,7 +48,7 @@ class StockData(models.Model):
 
         # If the latest date is not None, adjust it to the given time zone.
         if latest_date is not None:
-            latest_date = latest_date.astimezone(timezone(time_zone))
+            latest_date = latest_date.astimezone(pytzTimezone(time_zone))
 
         # Return the latest date.
         return latest_date
