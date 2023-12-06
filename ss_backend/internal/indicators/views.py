@@ -22,3 +22,34 @@ def calculate_sma_view(request):
         response_data = {'success': False, 'message': 'Invalid request method'}
 
     return JsonResponse(response_data)
+
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.authentication import SessionAuthentication, TokenAuthentication
+from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly
+
+
+@api_view(["GET"])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
+@permission_classes([AllowAny, IsAuthenticatedOrReadOnly])
+def executeIndicator(request):
+
+    '''
+    # Take the list of symbols, or watchlist name from the request 
+    # extract indicator conditions and stuct 
+    # example SMA :{condition1,condition2}, EMA :{condition1,condition2}
+    # use this key to point to the right function Application layer
+    # App layer will call the indicators core layer to get the insights
+    # return pruned list
+
+    API layer:      [symbols]
+    Assembler layer:[symbols], [smybol]->df, []result
+    Appilication layer:[symbols], [smybol]->df, []result
+    Core layer : [symbols], [smybol]->df, []result
+    
+    '''
+
+    return
+    
+
+    
+

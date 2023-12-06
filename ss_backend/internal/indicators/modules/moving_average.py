@@ -1,59 +1,104 @@
 import pandas as pd
+import pandas_ta as ta
 
-"""
-Provides SMA, in this case pDays is the window size, the number of days
-SMA_diff for latest is NaN cause it depends on coming date 
-SMA_diff = SMA_current - SMA_previous
-so that's an expected behaviour to be handled,accordingly
-"""
-def simpleMovingAverage(df,pDays):
-    # Calculate the SMA
-    df['SMA'] = df['close'].rolling(window=pDays).mean()
+def append_sma(df, column="close", length=44, offset=0, suffix="_SMA", inplace=True):
+  """
+  Calculates and appends the Simple Moving Average (SMA) to a DataFrame.
 
-    # Calculate the difference between consecutive SMA values
-    df['SMA_diff'] = df['SMA'].diff()
+  Args:
+      df: The DataFrame where the SMA will be calculated.
+      column: Name of the column to use for calculating the SMA (default: "Close").
+      length: Number of periods for the SMA calculation (default: 20).
+      offset: Number of periods to shift the SMA forward (positive) or backward (negative) (default: 0).
+      suffix: Suffix to add to the new SMA column name (default: "_SMA").
+      inplace: Whether to modify the original DataFrame or return a new one (default: False).
 
-    # Identify trends
-    df['SMA_trend'] = df['SMA_diff'] > 0
+  Returns:
+      A DataFrame with the SMA appended as a new column.
 
-    ## TODO: moving this to upper application layer
+  Raises:
+      ValueError: If an invalid offset is provided.
+  """
 
-    # Calculate the proportion of True values in SMA_trend
-    # proportion_increasing = df['SMA_trend'].iloc[:-1].mean()
+  if offset < 0:
+      raise ValueError("Offset for SMA cannot be negative.")
 
-    # # Set SMA_trend_direction
-    # if proportion_increasing > 0.5:
-    #     df['SMA_trend_direction'] = 'Increasing'
-    # elif proportion_increasing == 0.5:
-    #     df['SMA_trend_direction'] = 'Neutral'
-    # else:
-    #     df['SMA_trend_direction'] = 'Decreasing'
+  sma_name = f"{column}{suffix}"
+  if not inplace:
+      df = df.copy()
+
+  df[sma_name] = df.ta.sma(close=column, length=length, offset=offset)
+
+  return df
 
 
 
-def exponentialMovingAverage(df, pDays):
-    # Calculate the EMA
-    df['EMA'] = df['close'].ewm(span=pDays, min_periods=pDays - 1).mean()
+def append_ema(df, column="close", length=44, smoothing="exponential", offset=0, suffix="_EMA", inplace=True):
+  """
+  Calculates and appends the Exponential Moving Average (EMA) to a DataFrame.
 
-    # Calculate the difference between consecutive EMA values
-    df['EMA_diff'] = df['EMA'].diff()
+  Args:
+      df: The DataFrame where the EMA will be calculated.
+      column: Name of the column to use for calculating the EMA (default: "Close").
+      length: Number of periods for the EMA calculation (default: 20).
+      smoothing: Averaging method, either "linear" or "exponential" (default: "exponential").
+      offset: Number of periods to shift the EMA forward (positive) or backward (negative) (default: 0).
+      suffix: Suffix to add to the new EMA column name (default: "_EMA").
+      inplace: Whether to modify the original DataFrame or return a new one (default: False).
 
-    # Identify trends
-    df['EMA_trend'] = df['EMA_diff'] > 0
+        Offset	    Interpretation	                                Use cases
+        Positive	More responsive, captures recent changes	    Short-term trends, catching up to volatile prices
+        Negative	Smoother, filters out noise	                    Long-term trends, ignoring short-term fluctuations
+        Zero	    Balanced view, captures both short & long-term	Default, suitable for general analysis
 
-    ## TODO: moving this to upper application layer
-    # Calculate the proportion of True values in EMA_trend
-    # proportion_increasing = df['EMA_trend'].iloc[:-1].mean()
+  Returns:
+      A DataFrame with the EMA appended as a new column.
 
-    # # Set EMA_trend_direction
-    # if proportion_increasing > 0.5:
-    #     df['EMA_trend_direction'] = 'Increasing'
-    # elif proportion_increasing == 0.5:
-    #     df['EMA_trend_direction'] = 'Neutral'
-    # else:
-    #     df['EMA_trend_direction'] = 'Decreasing'
+  Raises:
+      ValueError: If an invalid smoothing method is provided.
+  """
 
-    # # Calculate EMA_trend_min, EMA_trend_max, EMA_trend_exact_pDays2
-    # df['EMA_trend_min'] = df['EMA_trend'].rolling(window=pDays2).min()
-    # df['EMA_trend_max'] = df['EMA_trend'].rolling(window=pDays2).max()
-    # df['EMA_trend_exact_pDays2'] = df['EMA_trend'].rolling(window=pDays2).apply(lambda x: x.all())
+  if smoothing not in ("linear", "exponential"):
+      raise ValueError("Invalid smoothing method. Choose 'linear' or 'exponential'.")
+
+  ema_name = f"{column}{suffix}"
+  if not inplace:
+      df = df.copy()
+
+  df[ema_name] = df.ta.ema(close=column, length=length, smoothing=smoothing, offset=offset)
+
+  return df
+
+import pandas_ta as ta
+
+def append_wma(df, column="Close", length=44, offset=0, suffix="_WMA", inplace=True):
+
+    """
+    Calculates and appends the Weighted Moving Average (WMA) to a DataFrame.
+
+    Args:
+        df (pandas.DataFrame): The DataFrame where the WMA will be calculated.
+        column (str): Name of the column to use for calculating the WMA (default: "Close").
+        length (int): Number of periods for the WMA calculation (default: 20).
+        offset (int): Number of periods to shift the WMA forward (positive) or backward (negative) (default: 0).
+        suffix (str): Suffix to add to the new WMA column name (default: "_WMA").
+        inplace (bool): Whether to modify the original DataFrame or return a new one (default: False).
+
+    Returns:
+        pandas.DataFrame: A DataFrame with the WMA appended as a new column.
+
+    Raises:
+        ValueError: If an invalid offset is provided.
+    """
+
+    if offset < 0:
+        raise ValueError("Offset for WMA cannot be negative.")
+
+    wma_name = f"{column}{suffix}"
+    if not inplace:
+        df = df.copy()
+
+    df[wma_name] = df.ta.wma(close=column, length=length, offset=offset)
+
+    return df
+
