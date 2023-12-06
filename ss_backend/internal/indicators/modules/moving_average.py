@@ -23,11 +23,8 @@ def append_sma(df, column="close", length=44, offset=0, suffix="_SMA", inplace=T
   if offset < 0:
       raise ValueError("Offset for SMA cannot be negative.")
 
-  sma_name = f"{column}{suffix}"
-  if not inplace:
-      df = df.copy()
 
-  df[sma_name] = df.ta.sma(close=column, length=length, offset=offset)
+  df.ta.sma(close=column, length=length, offset=offset,append=True)
 
   return df
 
@@ -65,11 +62,10 @@ def append_ema(df, column="close", length=44, smoothing="exponential", offset=0,
   if not inplace:
       df = df.copy()
 
-  df[ema_name] = df.ta.ema(close=column, length=length, smoothing=smoothing, offset=offset)
+  df.ta.ema(close=column, length=length, smoothing=smoothing, offset=offset,append=True)
 
   return df
 
-import pandas_ta as ta
 
 def append_wma(df, column="Close", length=44, offset=0, suffix="_WMA", inplace=True):
 
@@ -98,7 +94,7 @@ def append_wma(df, column="Close", length=44, offset=0, suffix="_WMA", inplace=T
     if not inplace:
         df = df.copy()
 
-    df[wma_name] = df.ta.wma(close=column, length=length, offset=offset)
+    df.ta.wma(close=column, length=length, offset=offset,append=True)
 
     return df
 
