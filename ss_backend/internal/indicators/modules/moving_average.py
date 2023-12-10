@@ -31,7 +31,7 @@ def append_sma(df,**kwargs):
 
   return df
 
-def evaluate_sma(df, resultlist, **kwargs):
+def evaluate_ma(df, **kwargs):
   """
   Evaluates the conditions and appends the DataFrame's symbol_id to a list of DataFrames if they meet the conditions.
 
@@ -57,34 +57,32 @@ def evaluate_sma(df, resultlist, **kwargs):
 #   print(df.tail(50))
 
 # Check if the expected SMA column already exists
-  sma_name = kwargs.get("name", "SMA") + "_" + str(kwargs.get("length"))
-  if sma_name not in df.columns:
-      raise ValueError(f"SMA column '{sma_name}' not found in the DataFrame.")
+  ma_name = str(kwargs.get("name")) + "_" + str(kwargs.get("length"))
+  if ma_name not in df.columns:
+      raise ValueError(f"MA column '{ma_name}' not found in the DataFrame.")
 
-  # Use the existing SMA column for evaluation
-  df['SMA'] = df[sma_name]
 
   # Check the direction
   if conditions['direction'] == "increasing":
-      trend = df['SMA'] > df['SMA'].shift(1)
+      trend = df[ma_name] > df[ma_name].shift(1)
   else:
-      trend = df['SMA'] < df['SMA'].shift(1)
+      trend = df[ma_name] < df[ma_name].shift(1)
 
   if conditions['condition'] == "minimum":
-      minimum = df['SMA'].rolling(window=conditions['bars']).min()
-      condition = df['SMA'] == minimum
+      minimum = df[ma_name].rolling(window=conditions['bars']).min()
+      condition = df[ma_name] == minimum
   elif conditions['condition'] == "maximum":
-      maximum = df['SMA'].rolling(window=conditions['bars']).max()
-      condition = df['SMA'] == maximum
+      maximum = df[ma_name].rolling(window=conditions['bars']).max()
+      condition = df[ma_name] == maximum
   else:
-      # Check if SMA is increasing for exactly 5 bars
+      # Check if MA is increasing for exactly 5 bars
       condition = trend.iloc[-int(conditions['bars']):] # type: ignore
 
   # Check if the conditions are met
   if condition.iloc[-1]:
-      resultlist.add(df["symbol_id"].iloc[0])
+      return True
+  return False
 
-  return resultlist
 
 
 
@@ -112,7 +110,7 @@ def append_ema(df, **kwargs):
   """
 
   column = kwargs.get("column", "close")
-  length = kwargs.get("length", 50)
+  length = kwargs.get("length")
   smoothing = kwargs.get("smoothing", "exponential")
   offset = kwargs.get("offset", 0)
 
@@ -147,10 +145,6 @@ def append_wma(df, column="Close", length=44, offset=0, suffix="_WMA", inplace=T
 
     if offset < 0:
         raise ValueError("Offset for WMA cannot be negative.")
-
-    wma_name = f"{column}{suffix}"
-    if not inplace:
-        df = df.copy()
 
     df.ta.wma(close=column, length=length, offset=offset,append=True)
 
