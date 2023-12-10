@@ -1,5 +1,15 @@
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view
+from django.contrib.auth.decorators import login_required
+from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly
+from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 import json
 from django.http import JsonResponse
+
+from internal.indicators.modules.dataframes import getDataFrameMap
+from internal.indicators.modules.mapper import IndicatorMap
+
 
 def calculate_sma_view(request):
     if request.method == 'GET':
@@ -23,16 +33,12 @@ def calculate_sma_view(request):
 
     return JsonResponse(response_data)
 
-from rest_framework.decorators import api_view, authentication_classes, permission_classes
-from rest_framework.authentication import SessionAuthentication, TokenAuthentication
-from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly
 
-
-@api_view(["GET"])
+@api_view(["POST"])
 @authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([AllowAny, IsAuthenticatedOrReadOnly])
+# TODO:This is allowed by logged it-> free tier and paid folks
 def executeIndicator(request):
-
     '''
     # Take the list of symbols, or watchlist name from the request 
     # extract indicator conditions and stuct 
@@ -45,11 +51,71 @@ def executeIndicator(request):
     Assembler layer:[symbols], [smybol]->df, []result
     Appilication layer:[symbols], [smybol]->df, []result
     Core layer : [symbols], [smybol]->df, []result
-    
+
     '''
 
-    return
+    """
+    REQUEST STRUCT :
+    map[indicator]:{
     
+    }
+    """
+    data = request.data
 
+    # Extract the list of strings
+    string_list = data.get("stocks")
+
+    # Check if the key exists and the value is a list
+    if not string_list or not isinstance(string_list, list):
+        raise ValueError("Missing or invalid string list")
+
+    # Process the list of strings
+    for string in string_list:
+        # Do something with the string
+        print(string)
+
+    return JsonResponse("Success")
+
+
+# Define your indicator models and related logic here
+
+
+@api_view(["POST"])
+# @authentication_classes([SessionAuthentication, TokenAuthentication])
+# @permission_classes([AllowAny, IsAuthenticated])
+def indicator(request):
+    """
+    Create and apply indicators based on request body data.
+    """
+
+    # Get data from request body
+    try:
+        indicators = request.data["indicators"]
+        symbols = request.data["symbols"]
+    except KeyError:
+        return JsonResponse(
+            {"error": "Missing required keys in request body."}, status=400
+        )
+
+    # Validate data format
+    if not isinstance(indicators, dict) or not isinstance(symbols, list):
+        return JsonResponse(
+            {"error": "Invalid data format."}, status=400
+        )
+
+    dfMap = getDataFrameMap(symbols,200)
     
+    for _,df in dfMap.items():
+        for indicator_name, properties in indicators.items():
+            indicatorFunc = IndicatorMap[indicator_name]
+            ## this automatically takes the properties mapping, kwargs not needed
+            indicatorFunc(df,**properties)
 
+    print(dfMap)
+
+
+
+    # Return success response
+    return JsonResponse(
+        {"message": "Indicators successfully created and applied."}, status=201
+    )

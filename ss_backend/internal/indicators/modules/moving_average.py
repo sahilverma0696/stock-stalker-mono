@@ -1,7 +1,7 @@
 import pandas as pd
 import pandas_ta as ta
 
-def append_sma(df, column="close", length=44, offset=0, suffix="_SMA", inplace=True):
+def append_sma(df,length, column="close", offset=0):
   """
   Calculates and appends the Simple Moving Average (SMA) to a DataFrame.
 
@@ -30,23 +30,19 @@ def append_sma(df, column="close", length=44, offset=0, suffix="_SMA", inplace=T
 
 
 
-def append_ema(df, column="close", length=44, smoothing="exponential", offset=0, suffix="_EMA", inplace=True):
+def append_ema(df, **kwargs):
   """
   Calculates and appends the Exponential Moving Average (EMA) to a DataFrame.
 
   Args:
       df: The DataFrame where the EMA will be calculated.
-      column: Name of the column to use for calculating the EMA (default: "Close").
-      length: Number of periods for the EMA calculation (default: 20).
-      smoothing: Averaging method, either "linear" or "exponential" (default: "exponential").
-      offset: Number of periods to shift the EMA forward (positive) or backward (negative) (default: 0).
-      suffix: Suffix to add to the new EMA column name (default: "_EMA").
-      inplace: Whether to modify the original DataFrame or return a new one (default: False).
-
-        Offset	    Interpretation	                                Use cases
-        Positive	More responsive, captures recent changes	    Short-term trends, catching up to volatile prices
-        Negative	Smoother, filters out noise	                    Long-term trends, ignoring short-term fluctuations
-        Zero	    Balanced view, captures both short & long-term	Default, suitable for general analysis
+      **kwargs: Dictionary containing any of the following optional parameters:
+          - column: Name of the column to use for calculating the EMA (default: "close").
+          - length: Number of periods for the EMA calculation (default: 20).
+          - smoothing: Averaging method, either "linear" or "exponential" (default: "exponential").
+          - offset: Number of periods to shift the EMA forward (positive) or backward (negative) (default: 0).
+          - suffix: Suffix to add to the new EMA column name (default: "_EMA").
+          - inplace: Whether to modify the original DataFrame or return a new one (default: False).
 
   Returns:
       A DataFrame with the EMA appended as a new column.
@@ -55,17 +51,20 @@ def append_ema(df, column="close", length=44, smoothing="exponential", offset=0,
       ValueError: If an invalid smoothing method is provided.
   """
 
+  column = kwargs.get("column", "close")
+  length = kwargs.get("length", 20)
+  smoothing = kwargs.get("smoothing", "exponential")
+  offset = kwargs.get("offset", 0)
+  suffix = kwargs.get("suffix", "_EMA")
+  inplace = kwargs.get("inplace", True)
+
   if smoothing not in ("linear", "exponential"):
       raise ValueError("Invalid smoothing method. Choose 'linear' or 'exponential'.")
 
-  ema_name = f"{column}{suffix}"
-  if not inplace:
-      df = df.copy()
 
-  df.ta.ema(close=column, length=length, smoothing=smoothing, offset=offset,append=True)
+  df.ta.ema(close=column, length=length, smoothing=smoothing, offset=offset, append=True)
 
   return df
-
 
 def append_wma(df, column="Close", length=44, offset=0, suffix="_WMA", inplace=True):
 
