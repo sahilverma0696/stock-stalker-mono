@@ -22,7 +22,7 @@ GRANT ALL ON SCHEMA public TO postgres;
 GRANT ALL ON SCHEMA public TO public;
 
 for each app
-python manage.py makemigrations <appname> 
+python3 manage.py makemigrations <appname> 
 python3 manage.py migrate
 
 
