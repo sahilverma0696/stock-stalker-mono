@@ -1,7 +1,7 @@
 import pandas as pd
 import pandas_ta as ta
 
-def append_sma(df,length, column="close", offset=0):
+def append_sma(df,**kwargs):
   """
   Calculates and appends the Simple Moving Average (SMA) to a DataFrame.
 
@@ -20,13 +20,73 @@ def append_sma(df,length, column="close", offset=0):
       ValueError: If an invalid offset is provided.
   """
 
+  column = kwargs.get("column", "close")
+  length = kwargs.get("length", 50)
+  offset = kwargs.get("offset", 0)
+
   if offset < 0:
       raise ValueError("Offset for SMA cannot be negative.")
-
 
   df.ta.sma(close=column, length=length, offset=offset,append=True)
 
   return df
+
+def evaluate_sma(df, resultlist, **kwargs):
+  """
+  Evaluates the conditions and appends the DataFrame's symbol_id to a list of DataFrames if they meet the conditions.
+
+  Args:
+      df: The DataFrame to be evaluated.
+      resultlist: A list of DataFrames where the symbol_id will be appended if the conditions are met.
+      kwargs: A dictionary containing the following keys:
+          - direction: "increasing" or "decreasing"
+          - condition: "minimum", "maximum", or "exact"
+          - bars: Number of bars to consider for the condition
+          - additional_kwargs: Any additional keyword arguments passed to the function
+
+  Returns:
+      A list of DataFrames with the symbol_id appended if the conditions were met.
+  """
+  # Extract the conditions from kwargs
+  conditions = {
+      "direction": kwargs.get("direction"),
+      "condition": kwargs.get("condition"),
+      "bars": kwargs.get("bars"),
+  }
+
+#   print(df.tail(50))
+
+# Check if the expected SMA column already exists
+  sma_name = kwargs.get("name", "SMA") + "_" + str(kwargs.get("length"))
+  if sma_name not in df.columns:
+      raise ValueError(f"SMA column '{sma_name}' not found in the DataFrame.")
+
+  # Use the existing SMA column for evaluation
+  df['SMA'] = df[sma_name]
+
+  # Check the direction
+  if conditions['direction'] == "increasing":
+      trend = df['SMA'] > df['SMA'].shift(1)
+  else:
+      trend = df['SMA'] < df['SMA'].shift(1)
+
+  if conditions['condition'] == "minimum":
+      minimum = df['SMA'].rolling(window=conditions['bars']).min()
+      condition = df['SMA'] == minimum
+  elif conditions['condition'] == "maximum":
+      maximum = df['SMA'].rolling(window=conditions['bars']).max()
+      condition = df['SMA'] == maximum
+  else:
+      # Check if SMA is increasing for exactly 5 bars
+      condition = trend.iloc[-int(conditions['bars']):] # type: ignore
+
+  # Check if the conditions are met
+  if condition.iloc[-1]:
+      resultlist.add(df["symbol_id"].iloc[0])
+
+  return resultlist
+
+
 
 
 
@@ -52,11 +112,10 @@ def append_ema(df, **kwargs):
   """
 
   column = kwargs.get("column", "close")
-  length = kwargs.get("length", 20)
+  length = kwargs.get("length", 50)
   smoothing = kwargs.get("smoothing", "exponential")
   offset = kwargs.get("offset", 0)
-  suffix = kwargs.get("suffix", "_EMA")
-  inplace = kwargs.get("inplace", True)
+
 
   if smoothing not in ("linear", "exponential"):
       raise ValueError("Invalid smoothing method. Choose 'linear' or 'exponential'.")

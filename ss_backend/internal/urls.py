@@ -5,7 +5,7 @@ from rest_framework.routers import DefaultRouter
 from internal.symbol.views import SymbolList, SymbolViewSet
 from internal.stocksdata.views import *
 from internal.utility.views import fetch_data
-from internal.indicators.views import calculate_sma_view, indicator
+from internal.indicators.views import calculate_sma_view, indicator, maSlopeAnalysis
 from internal.watchlists.views import WatchListView,getPublicWatchLists
 
 from internal.watchlistmapping.views import *
@@ -47,6 +47,7 @@ urlpatterns = [
     # path('watchlists-mapping/', include('internal.watchlistsmapping.urls')),
     path("public-watchlists/", getPublicWatchLists, name="get_public_watchlists"),
     path("indicator/", indicator, name="indicator"),
+    path("ma-slope-analysis/", maSlopeAnalysis, name="ma_slope_analysis"),
 
 
 ]
