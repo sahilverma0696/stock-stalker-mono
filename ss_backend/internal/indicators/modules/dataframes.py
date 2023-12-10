@@ -5,7 +5,7 @@ import pandas as pd
 def getDataFrame(symbol, num_days):
     # Get historical data from the database
     historical_data = StockData.objects.filter(
-        symbol=symbol).order_by('date')[:num_days]
+        symbol=symbol).order_by('-date')[:num_days]
 
     df = pd.DataFrame.from_records(historical_data.values())
     # Set the 'date' column as the index
