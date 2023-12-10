@@ -11,7 +11,7 @@ from rest_framework.response import Response
 
 from internal.indicators.modules.dataframes import getDataFrameMap
 from internal.indicators.modules.mapper import IndicatorMap
-from internal.indicators.modules.moving_average import evaluate_ma
+from internal.indicators.modules.moving_average import evaluate_ma, evaluate_ma_convergence
 
 
 def calculate_sma_view(request):
@@ -268,16 +268,14 @@ def maConvergence(request):
     dfMap = getDataFrameMap(symbols,200)
 
 
-    # for _,df in dfMap.items():
-    #     for eachIndicator in indicators:
-    #         indicatorFunc = IndicatorMap[eachIndicator["name"].lower()]
-    #         indicatorFunc(df,**eachIndicator)
-    #         ## this loop checks for each df each indicator statement on it, so all 
-    #         ## checks are evalutated that's fine
-    #         evaluate_sma(df,result,**eachIndicator)
-
-
-
+    for _,df in dfMap.items():
+        initialColumns = df.columns
+        for eachIndicator in indicators:
+            indicatorFunc = IndicatorMap[eachIndicator["name"].lower()]
+            indicatorFunc(df,**eachIndicator)
+        newColumns = df.columns.difference(initialColumns)
+        if evaluate_ma_convergence(df,condition,newColumns):
+            result.add(df["symbol_id"].iloc[0])
 
     # Return success response
     return Response(data=result, status=200)

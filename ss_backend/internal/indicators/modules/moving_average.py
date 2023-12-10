@@ -31,62 +31,6 @@ def append_sma(df,**kwargs):
 
   return df
 
-def evaluate_ma(df, **kwargs):
-  """
-  Evaluates the conditions and appends the DataFrame's symbol_id to a list of DataFrames if they meet the conditions.
-
-  Args:
-      df: The DataFrame to be evaluated.
-      resultlist: A list of DataFrames where the symbol_id will be appended if the conditions are met.
-      kwargs: A dictionary containing the following keys:
-          - direction: "increasing" or "decreasing"
-          - condition: "minimum", "maximum", or "exact"
-          - bars: Number of bars to consider for the condition
-          - additional_kwargs: Any additional keyword arguments passed to the function
-
-  Returns:
-      A list of DataFrames with the symbol_id appended if the conditions were met.
-  """
-  # Extract the conditions from kwargs
-  conditions = {
-      "direction": kwargs.get("direction"),
-      "condition": kwargs.get("condition"),
-      "bars": kwargs.get("bars"),
-  }
-
-#   print(df.tail(50))
-
-# Check if the expected SMA column already exists
-  ma_name = str(kwargs.get("name")) + "_" + str(kwargs.get("length"))
-  if ma_name not in df.columns:
-      raise ValueError(f"MA column '{ma_name}' not found in the DataFrame.")
-
-
-  # Check the direction
-  if conditions['direction'] == "increasing":
-      trend = df[ma_name] > df[ma_name].shift(1)
-  else:
-      trend = df[ma_name] < df[ma_name].shift(1)
-
-  if conditions['condition'] == "minimum":
-      minimum = df[ma_name].rolling(window=conditions['bars']).min()
-      condition = df[ma_name] == minimum
-  elif conditions['condition'] == "maximum":
-      maximum = df[ma_name].rolling(window=conditions['bars']).max()
-      condition = df[ma_name] == maximum
-  else:
-      # Check if MA is increasing for exactly 5 bars
-      condition = trend.iloc[-int(conditions['bars']):] # type: ignore
-
-  # Check if the conditions are met
-  if condition.iloc[-1]:
-      return True
-  return False
-
-
-
-
-
 
 def append_ema(df, **kwargs):
   """
@@ -149,4 +93,118 @@ def append_wma(df, column="Close", length=44, offset=0, suffix="_WMA", inplace=T
     df.ta.wma(close=column, length=length, offset=offset,append=True)
 
     return df
+
+def evaluate_ma(df, **kwargs):
+  """
+  Evaluates the conditions and appends the DataFrame's symbol_id to a list of DataFrames if they meet the conditions.
+
+  Args:
+      df: The DataFrame to be evaluated.
+      resultlist: A list of DataFrames where the symbol_id will be appended if the conditions are met.
+      kwargs: A dictionary containing the following keys:
+          - direction: "increasing" or "decreasing"
+          - condition: "minimum", "maximum", or "exact"
+          - bars: Number of bars to consider for the condition
+          - additional_kwargs: Any additional keyword arguments passed to the function
+
+  Returns:
+      A list of DataFrames with the symbol_id appended if the conditions were met.
+  """
+  # Extract the conditions from kwargs
+  conditions = {
+      "direction": kwargs.get("direction"),
+      "condition": kwargs.get("condition"),
+      "bars": kwargs.get("bars"),
+  }
+
+#   print(df.tail(50))
+
+# Check if the expected SMA column already exists
+  ma_name = str(kwargs.get("name")) + "_" + str(kwargs.get("length"))
+  if ma_name not in df.columns:
+      raise ValueError(f"MA column '{ma_name}' not found in the DataFrame.")
+
+
+  # Check the direction
+  if conditions['direction'] == "increasing":
+      trend = df[ma_name] > df[ma_name].shift(1)
+  else:
+      trend = df[ma_name] < df[ma_name].shift(1)
+
+  if conditions['condition'] == "minimum":
+      minimum = df[ma_name].rolling(window=conditions['bars']).min()
+      condition = df[ma_name] == minimum
+  elif conditions['condition'] == "maximum":
+      maximum = df[ma_name].rolling(window=conditions['bars']).max()
+      condition = df[ma_name] == maximum
+  else:
+      # Check if MA is increasing for exactly 5 bars
+      condition = trend.iloc[-int(conditions['bars']):] # type: ignore
+
+  # Check if the conditions are met
+  if condition.iloc[-1]:
+      return True
+  return False
+
+
+
+def evaluate_ma_convergence(df, condition:dict,column:list):
+  """
+  Evaluates ma convergence condition.
+
+  Args:
+      df: The DataFrame to be evaluated.
+      kwargs: A dictionary containing the following keys:
+          - indicators: A list of dictionaries, each containing:
+              - name: User-defined name for the SMA column.
+          - condition: A dictionary containing:
+              - difference: The difference threshold between SMA values.
+              - type: "percentage" or "bars" for the difference calculation.
+              - bars: Number of bars to consider for the difference calculation (optional, required for "bars" type only).
+
+  Returns:
+      True if the conditions are met, False otherwise.
+  """
+
+  # Get condition parameters
+  condition_type = condition.get("type")
+  threshold = int(condition.get("threshold")) # type: ignore
+  bars = int(condition.get("bars")) # type: ignore
+
+
+  # Calculate the difference based on the type
+  if condition_type == "percentage":
+      ## Where difference is less than percentage in last bars
+      
+      # Calculate pairwise differences
+      df["differences"] = df[column].max(axis=1) - df[column].min(axis=1)
+
+      # Calculate absolute values and convert to percentage
+      df["differences"] = (df["differences"] / df[column].max(axis=1)) * 100
+      
+      # Check if the difference is less than 5 in the last 2 bars
+      last_bars = df["differences"].iloc[-bars:]
+
+      cond = last_bars < threshold
+      if cond.any():
+        return True
+      else:
+        return False
+  elif condition_type == "bars":
+       # Calculate pairwise differences
+      differences = df[column].diff(axis=1)
+
+      # Add the new column to the DataFrame
+      df["abs_diff_in_bar"] = differences.abs().max(axis=1)
+
+      # Get the last count_bars rows
+      last_bars = df.iloc[-threshold:]
+
+      # Check if the minimum value is within the last bars
+      min_index = last_bars["abs_diff_in_bar"].idxmin()
+      if (df.index[-1] - min_index).total_seconds() / 3600 <= bars:
+          print(df.tail(10))
+          return True
+      else:
+          return False
 
