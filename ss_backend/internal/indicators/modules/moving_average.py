@@ -94,6 +94,38 @@ def append_wma(df, column="Close", length=44, offset=0, suffix="_WMA", inplace=T
 
     return df
 
+import pandas as pd
+
+def calculate_mab(df, close="Close", window=20, std_dev=2):
+
+    """
+    Calculates Moving Average Bands (MAB) for a DataFrame and removes the MA and STD columns afterwards.
+
+    Args:
+        df (pandas.DataFrame): The DataFrame containing price data.
+        close (str): Name of the column containing closing prices (default: "Close").
+        window (int): Window size for the moving average (default: 20).
+        std_dev (float): Number of standard deviations for the bands (default: 2).
+
+    Returns:
+        pandas.DataFrame: The original DataFrame with additional columns for the upper and lower bands.
+    """
+
+    # Calculate the moving average and standard deviation
+    df["MA"] = df[close].rolling(window=window).mean()
+    df["STD"] = df[close].rolling(window=window).std()
+
+    # Calculate upper and lower bands
+    df["UpperBand"] = df["MA"] + std_dev * df["STD"]
+    df["LowerBand"] = df["MA"] - std_dev * df["STD"]
+
+    # Remove MA and STD columns
+    del df["MA"]
+    del df["STD"]
+
+    return df
+
+
 def evaluate_ma(df, **kwargs):
   """
   Evaluates the conditions and appends the DataFrame's symbol_id to a list of DataFrames if they meet the conditions.
@@ -208,3 +240,99 @@ def evaluate_ma_convergence(df, condition:dict,column:list):
       else:
           return False
 
+def evaluate_ma_crossover(df, sma_columns,condition:dict):
+  """
+  Evaluates if a specific crossover occurred in the last `lookback` bars.
+
+  Args:
+    df: A Pandas DataFrame containing the OHLCV data and the SMAs.
+    sma_columns: A list of strings containing the names of the SMA columns.
+    first_sma: The name of the first SMA column.
+    crossover: The type of crossover to evaluate ("bullish" or "bearish").
+    bars: The number of bars to look back for the crossover.
+
+  Returns:
+    True if the crossover occurred in the last `lookback` bars, False otherwise.
+  """
+
+  # Get condition parameters
+  crossover = condition.get("crossover")
+  first_sma = "SMA_"+str(condition.get("first")) # type: ignore
+  bars = int(condition.get("bars")) # type: ignore
+
+
+  # Calculate the crossover condition
+  if crossover == "bullish":
+    crossover_condition = df[first_sma] > df[sma_columns[1]]
+  elif crossover == "bearish":
+    crossover_condition = df[first_sma] < df[sma_columns[1]]
+  else:
+    raise ValueError("Invalid crossover type: {}".format(crossover))  
+
+  # Check if the crossover occurred in the last `lookback` bars
+  return crossover_condition.tail(bars).any()
+
+
+
+def evaluate_ma_price_crossover(df, sma_column, condition:dict):
+  """
+  Evaluates if the price closed above or below the SMA in the last `lookback` bars.
+
+  Args:
+    df: A Pandas DataFrame containing the OHLCV data and the SMA.
+    sma_column: The name of the SMA column.
+    condition: The condition to evaluate ("above" or "below").
+    bars: The number of bars to look back for the condition.
+
+  Returns:
+    True if the price closed above/below the SMA in any of the last `lookback` bars, False otherwise.
+  """
+
+  # Get condition parameters
+  closed = condition.get("closed")
+  bars = int(condition.get("bars")) # type: ignore
+
+
+  # Calculate the price-SMA closed
+  if closed == "above":
+    price_sma_condition = df["close"] > df[sma_column[0]]
+  elif closed == "below":
+    price_sma_condition = df["close"] < df[sma_column[0]]
+  else:
+    raise ValueError("Invalid condition: {}".format(closed))
+  
+  # Check if the condition occurred in the last `lookback` bars
+  return price_sma_condition.tail(bars).any()
+
+def evaluate_mab(df, condition:dict):
+  """
+  Evaluates if the price or a full candle met the specified condition with respect to the UpperBand or LowerBand in the last `lookback` bars.
+
+  Args:
+    df: A Pandas DataFrame containing the OHLCV data and the Bollinger Bands.
+    band_column: The name of the band column ("UpperBand" or "LowerBand").
+    condition: The condition to evaluate ("price_above", "full_candle_above", "price_below", "full_candle_below", "supertrend_above", "supertrend_below").
+    lookback: The number of bars to look back for the condition.
+
+  Returns:
+    True if the price or a full candle met the specified condition with respect to the band in any of the last `lookback` bars, False otherwise.
+  """
+  # Get condition parameters
+  state = str(condition.get("state"))
+  bars = int(condition.get("bars")) # type: ignore
+  band_column = str(condition.get("band"))
+
+
+  # Define the evaluation function based on the condition
+  condition_functions = {
+    "price_above": lambda df, band: df["close"] > df[band],
+    "full_candle_above": lambda df, band: df["high"] > df[band],
+    "price_below": lambda df, band: df["close"] < df[band],
+    "full_candle_below": lambda df, band: df["low"] < df[band],
+    ##TODO: SuperTrend is left
+    "supertrend_above": lambda df, band: df["SuperTrend"] > df[band],
+    "supertrend_below": lambda df, band: df["SuperTrend"] < df[band],
+  }
+
+  # Check if the condition occurred in the last `lookback` bars
+  return condition_functions[state](df.tail(bars), band_column).any()
