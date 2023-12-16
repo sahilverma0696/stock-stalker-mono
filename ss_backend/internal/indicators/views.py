@@ -11,7 +11,7 @@ from rest_framework.response import Response
 
 from internal.indicators.modules.dataframes import getDataFrameMap
 from internal.indicators.modules.mapper import IndicatorMap
-from internal.indicators.modules.moving_average import evaluate_ma, evaluate_ma_convergence
+from internal.indicators.modules.moving_average import evaluate_ma, evaluate_ma_convergence, evaluate_ma_crossover,evaluate_ma_price_crossover
 
 
 def calculate_sma_view(request):
@@ -194,13 +194,13 @@ def maSlopeAnalysis(request):
         for eachIndicator in indicators:
             indicatorFunc = IndicatorMap[eachIndicator["name"].lower()]
             indicatorFunc(df,**eachIndicator)
-            ## this loop checks for each df each indicator statement on it, so all 
+            ## TODO: double negative allows positive this loop checks for each df each indicator statement on it, so all 
             ## checks are evalutated that's fine
             flag = flag & evaluate_ma(df,**eachIndicator)
+            if not flag :
+                continue
         if flag:
             result.add(df["symbol_id"].iloc[0])
-
-
 
 
     # Return success response
@@ -275,6 +275,148 @@ def maConvergence(request):
             indicatorFunc(df,**eachIndicator)
         newColumns = df.columns.difference(initialColumns)
         if evaluate_ma_convergence(df,condition,newColumns):
+            result.add(df["symbol_id"].iloc[0])
+
+    # Return success response
+    return Response(data=result, status=200)
+
+
+@api_view(["POST"])
+# @authentication_classes([SessionAuthentication, TokenAuthentication])
+# @permission_classes([AllowAny, IsAuthenticated])
+def maCrossover(request):
+    """
+    Returns a list of symbols which stands true for the given MA crossover conditions
+
+    Supports 2 of MA conditions provided
+    Condition
+
+    crossover       from                        bars
+    bullish         always first to second      1
+    bearish                                     2
+                                                10
+    example:
+    {
+    "indicators": [{
+            "name":"sma",
+            "column": "close",
+            "length": 10,
+        },
+        {
+            "name":"sma",
+            "column": "close",
+            "length": 20,
+        }],
+    "condition":{
+        "crossover":"bullish", ## bearish
+        "bars": 5
+        "first":length
+    }
+    "symbols": [
+        "SBIN",
+        "YESBANK"
+    ]
+}
+    """
+
+    # Get data from request body
+    try:
+        indicators = request.data["indicators"]
+        symbols = request.data["symbols"]
+        condition = request.data["condition"]
+    except KeyError:
+        return JsonResponse(
+            {"error": "Missing required keys in request body."}, status=400
+        )
+
+    # Validate data format
+    if not isinstance(indicators, list) or not isinstance(symbols, list) or not isinstance(condition, dict):
+        return JsonResponse(
+            {"error": "Invalid data format."}, status=400
+        )
+    
+    result = set()
+
+    dfMap = getDataFrameMap(symbols,200)
+
+
+
+    for _,df in dfMap.items():
+        initialColumns = df.columns
+        for eachIndicator in indicators:
+            indicatorFunc = IndicatorMap[eachIndicator["name"].lower()]
+            indicatorFunc(df,**eachIndicator)
+        newColumns = df.columns.difference(initialColumns)
+        if evaluate_ma_crossover(df,newColumns,condition):
+            result.add(df["symbol_id"].iloc[0])
+
+    # Return success response
+    return Response(data=result, status=200)
+
+@api_view(["POST"])
+# @authentication_classes([SessionAuthentication, TokenAuthentication])
+# @permission_classes([AllowAny, IsAuthenticated])
+def maPriceCrossover(request):
+    """
+    Crossover : when two indicator lines crosses each other
+
+    Supports 2 of MA conditions provided
+    Condition
+
+    MA         CROSSOVER       FROM                        BARS
+    sma        bullish         always first to second      1
+    ema        bearish                                     2
+    wma                                                    10
+    
+    example:
+    {
+    "indicators": [
+        {
+            "name": "sma",
+            "column": "close",
+            "length": 10
+        }
+    ],
+    "condition":{
+        "closed":"above", // below
+        "bars": 20
+    }
+    "symbols": [
+        "SBIN",
+        "YESBANK"
+    ]
+}
+    """
+
+    # Get data from request body
+    try:
+        indicators = request.data["indicators"]
+        symbols = request.data["symbols"]
+        condition = request.data["condition"]
+    except KeyError:
+        return JsonResponse(
+            {"error": "Missing required keys in request body."}, status=400
+        )
+
+    # Validate data format
+    if not isinstance(indicators, list) or not isinstance(symbols, list) or not isinstance(condition, dict):
+        return JsonResponse(
+            {"error": "Invalid data format."}, status=400
+        )
+    
+    result = set()
+
+    dfMap = getDataFrameMap(symbols,200)
+
+
+
+    for _,df in dfMap.items():
+        initialColumns = df.columns
+        for eachIndicator in indicators:
+            indicatorFunc = IndicatorMap[eachIndicator["name"].lower()]
+            indicatorFunc(df,**eachIndicator)
+        newColumns = df.columns.difference(initialColumns)
+        if evaluate_ma_price_crossover(df,newColumns,condition):
             result.add(df["symbol_id"].iloc[0])
 
     # Return success response
