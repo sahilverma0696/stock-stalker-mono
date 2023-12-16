@@ -358,15 +358,16 @@ def maCrossover(request):
 # @permission_classes([AllowAny, IsAuthenticated])
 def maPriceCrossover(request):
     """
-    Returns a list of symbols which stands true for the given MA crossover with price conditions
+    Crossover : when two indicator lines crosses each other
 
     Supports 2 of MA conditions provided
     Condition
 
-    crossover       from                        bars
-    bullish         always first to second      1
-    bearish                                     2
-                                                10
+    MA         CROSSOVER       FROM                        BARS
+    sma        bullish         always first to second      1
+    ema        bearish                                     2
+    wma                                                    10
+    
     example:
     {
     "indicators": [
