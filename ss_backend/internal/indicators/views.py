@@ -9,9 +9,9 @@ from django.http import JsonResponse
 from rest_framework.response import Response
 
 
-from internal.indicators.modules.dataframes import getDataFrameMap
-from internal.indicators.modules.mapper import IndicatorMap
-from internal.indicators.modules.moving_average import evaluate_ma, evaluate_ma_convergence, evaluate_ma_crossover,evaluate_ma_price_crossover
+from internal.indicators.core_layer.dataframes import getDataFrameMap
+from internal.indicators.core_layer.mapper import IndicatorMap
+from internal.indicators.core_layer.trend_indicators.moving_average import evaluate_ma, evaluate_ma_convergence, evaluate_ma_crossover,evaluate_ma_price_crossover
 
 
 def calculate_sma_view(request):
